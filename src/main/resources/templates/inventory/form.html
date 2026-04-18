@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${pageTitle + ' | MMD Furniture House'}">Product</title>
+    <th:block th:insert="~{fragments/layout :: headStyles}"></th:block>
+</head>
+<body>
+<div class="app-layout">
+    <div th:insert="~{fragments/layout :: sidebar}"></div>
+    <div class="main-col">
+        <div th:insert="~{fragments/layout :: topbar(${pageTitle})}"></div>
+        <div th:insert="~{fragments/layout :: alerts}"></div>
+        <div class="page-content">
+            <div style="max-width:640px;margin:0 auto;">
+                <div class="card">
+                    <div style="display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid #f0f0f0;margin-bottom:20px;">
+                        <div style="width:40px;height:40px;background:#fffbe6;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                            <svg width="20" height="20" fill="none" stroke="#b8860b" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                        </div>
+                        <div>
+                            <h2 style="font-size:18px;font-weight:700;color:#0f3460;" th:text="${pageTitle}"></h2>
+                            <p style="color:#9ca3af;font-size:13px;">Fields marked * are required</p>
+                        </div>
+                    </div>
+                    <form th:action="${formAction}" method="post" th:object="${product}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="hidden" th:field="*{id}"/>
+                        <div class="form-group">
+                            <label class="form-label">Product Name *</label>
+                            <input type="text" th:field="*{name}" class="form-input" th:classappend="${#fields.hasErrors('name')}?' error':''" placeholder="e.g. Wooden Sofa Set (3+1+1)"/>
+                            <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="form-error"></div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div class="form-group">
+                                <label class="form-label">Selling Price (₹) *</label>
+                                <input type="number" th:field="*{currentPrice}" step="0.01" min="0.01" class="form-input" th:classappend="${#fields.hasErrors('currentPrice')}?' error':''" placeholder="0.00"/>
+                                <div th:if="${#fields.hasErrors('currentPrice')}" th:errors="*{currentPrice}" class="form-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">HSN Code *</label>
+                                <input type="text" th:field="*{hsnCode}" class="form-input" th:classappend="${#fields.hasErrors('hsnCode')}?' error':''" placeholder="e.g. 9401"/>
+                                <div th:if="${#fields.hasErrors('hsnCode')}" th:errors="*{hsnCode}" class="form-error"></div>
+                                <div style="color:#9ca3af;font-size:11px;margin-top:4px;">Harmonized System Nomenclature code</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Stock Quantity *</label>
+                            <input type="number" th:field="*{stockQuantity}" min="0" class="form-input" th:classappend="${#fields.hasErrors('stockQuantity')}?' error':''" placeholder="0" style="width:180px;"/>
+                            <div th:if="${#fields.hasErrors('stockQuantity')}" th:errors="*{stockQuantity}" class="form-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description <span style="color:#9ca3af;font-weight:400;">(optional)</span></label>
+                            <textarea th:field="*{description}" rows="3" class="form-input" style="resize:none;" placeholder="Material, dimensions, colour, features..."></textarea>
+                        </div>
+                        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;color:#1e40af;">
+                            <strong>💡 GST Note:</strong> All furniture items attract 18% GST (9% CGST + 9% SGST), applied automatically on all bills.
+                        </div>
+                        <div style="display:flex;gap:10px;">
+                            <button type="submit" class="btn btn-gold" th:text="${product.id==null?'Add Product':'Update Product'}"></button>
+                            <a th:href="@{/inventory}" class="btn btn-ghost">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="page-footer">&copy; 2024 MMD Furniture House Management System</div>
+    </div>
+</div>
+<th:block th:insert="~{fragments/layout :: clockScript}"></th:block>
+</body>
+</html>

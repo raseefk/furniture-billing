@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login &mdash; MMD Furniture House</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: {
+                gold: { 300:'#f5c518', 400:'#d4a017', 500:'#b8860b', 600:'#9a6f08' },
+                navy: { 600:'#16213e', 700:'#0f3460', 800:'#0a0a23', 900:'#050515' }
+            }}}
+        }
+    </script>
+    <style>
+        .bg-pattern {
+            background-color: #0a0a23;
+            background-image: radial-gradient(circle at 20% 50%, rgba(184,134,11,0.08) 0%, transparent 60%),
+                              radial-gradient(circle at 80% 20%, rgba(184,134,11,0.05) 0%, transparent 50%);
+        }
+    </style>
+</head>
+<body class="bg-pattern min-h-screen flex items-center justify-center p-4">
+
+<div class="w-full max-w-md">
+    <!-- Logo / Brand -->
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-20 h-20 bg-gold-500 rounded-2xl mb-4 shadow-2xl">
+            <svg class="w-12 h-12 text-navy-900" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4 10V19H8V15H16V19H20V10L12 3L4 10ZM18 17H17V14H7V17H6V10.69L12 5.19L18 10.69V17Z"/>
+            </svg>
+        </div>
+        <h1 class="text-3xl font-bold text-white">MMD Furniture House</h1>
+        <p class="text-gold-400 text-sm mt-1">Management System</p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div class="bg-gradient-to-r from-navy-800 to-navy-700 px-8 py-5">
+            <h2 class="text-xl font-bold text-white">Welcome Back</h2>
+            <p class="text-gray-400 text-sm">Sign in to manage your shop</p>
+        </div>
+
+        <div class="px-8 py-8">
+            <!-- Alerts -->
+            <div th:if="${error}" class="mb-5 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                <span th:text="${error}">Invalid credentials</span>
+            </div>
+            <div th:if="${message}" class="mb-5 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <span th:text="${message}"></span>
+            </div>
+
+            <form th:action="@{/login}" method="post" class="space-y-5">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Username</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        </span>
+                        <input type="text" name="username" placeholder="Enter username" autofocus required
+                               class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold-400 focus:border-transparent transition-all"/>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
+                    <div class="relative" x-data="{ show: false }">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        </span>
+                        <input :type="show ? 'text' : 'password'" name="password" placeholder="Enter password" required
+                               class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold-400 focus:border-transparent transition-all"/>
+                        <button type="button" @click="show = !show"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <svg x-show="!show" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <svg x-show="show" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-gold-500 hover:bg-gold-400 text-white font-bold py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl text-sm tracking-wide">
+                    Sign In to Dashboard
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <p class="text-center text-gray-600 text-xs mt-6">
+        Default credentials: <span class="text-gold-400 font-mono">admin / admin123</span>
+    </p>
+</div>
+
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</body>
+</html>

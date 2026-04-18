@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Customers | MMD Furniture House</title>
+    <th:block th:insert="~{fragments/layout :: headStyles}"></th:block>
+</head>
+<body>
+<div class="app-layout">
+    <div th:insert="~{fragments/layout :: sidebar}"></div>
+    <div class="main-col">
+        <div th:insert="~{fragments/layout :: topbar('Customers')}"></div>
+        <div th:insert="~{fragments/layout :: alerts}"></div>
+        <div class="page-content">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+                <div style="color:#6b7280;font-size:14px;"><strong style="color:#0f3460;" th:text="${#lists.size(customers)}">0</strong> customers</div>
+                <div style="display:flex;gap:10px;">
+                    <form th:action="@{/customers}" method="get" style="display:flex;gap:8px;">
+                        <input type="text" name="q" th:value="${query}" placeholder="Search name, phone, GST..." class="form-input" style="width:240px;"/>
+                        <button type="submit" class="btn btn-navy">Search</button>
+                        <a th:if="${query != null and !#strings.isEmpty(query)}" th:href="@{/customers}" class="btn btn-ghost">Clear</a>
+                    </form>
+                    <a th:href="@{/customers/new}" class="btn btn-gold">+ Add Customer</a>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(customers)}" class="card" style="text-align:center;padding:64px;">
+                <h3 style="color:#9ca3af;margin-bottom:12px;">No Customers Yet</h3>
+                <a th:href="@{/customers/new}" class="btn btn-gold" style="display:inline-flex;">Add First Customer</a>
+            </div>
+            <div th:if="${!#lists.isEmpty(customers)}" class="card" style="padding:0;overflow:hidden;">
+                <table>
+                    <thead><tr><th>Customer</th><th>Phone</th><th>Address</th><th>GST Number</th><th>Since</th><th style="text-align:center;">Actions</th></tr></thead>
+                    <tbody>
+                    <tr th:each="c : ${customers}">
+                        <td>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div style="width:34px;height:34px;background:#fffbe6;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;color:#b8860b;font-size:14px;" th:text="${#strings.substring(c.name,0,1).toUpperCase()}"></div>
+                                <span style="font-weight:600;color:#111;" th:text="${c.name}"></span>
+                            </div>
+                        </td>
+                        <td style="font-family:monospace;color:#6b7280;" th:text="${c.phone}"></td>
+                        <td style="font-size:13px;color:#9ca3af;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" th:text="${c.address}"></td>
+                        <td>
+                            <span th:if="${c.hasGst()}" class="badge badge-blue" style="font-family:monospace;font-size:11px;" th:text="${c.gstNumber}"></span>
+                            <span th:if="${!c.hasGst()}" style="color:#d1d5db;">—</span>
+                        </td>
+                        <td style="color:#9ca3af;font-size:12px;" th:text="${#temporals.format(c.createdAt,'dd MMM yyyy')}"></td>
+                        <td style="text-align:center;">
+                            <div style="display:flex;gap:4px;justify-content:center;">
+                                <a th:href="@{/customers/edit/{id}(id=${c.id})}" class="btn btn-ghost" style="padding:5px 10px;font-size:12px;">Edit</a>
+                                <a th:href="@{/billing/new}" class="btn" style="background:#fffbe6;color:#b8860b;border:1px solid #fde68a;padding:5px 10px;font-size:12px;">Bill</a>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="page-footer">&copy; 2024 MMD Furniture House Management System</div>
+    </div>
+</div>
+<th:block th:insert="~{fragments/layout :: clockScript}"></th:block>
+</body>
+</html>

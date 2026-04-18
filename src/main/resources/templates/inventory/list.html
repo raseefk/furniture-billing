@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Inventory | MMD Furniture House</title>
+    <th:block th:insert="~{fragments/layout :: headStyles}"></th:block>
+</head>
+<body>
+<div class="app-layout">
+    <div th:insert="~{fragments/layout :: sidebar}"></div>
+    <div class="main-col">
+        <div th:insert="~{fragments/layout :: topbar('Inventory Management')}"></div>
+        <div th:insert="~{fragments/layout :: alerts}"></div>
+        <div class="page-content">
+
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+                <div style="color:#6b7280;font-size:14px;">
+                    <strong style="color:#0f3460;" th:text="${#lists.size(products)}">0</strong> active products
+                    <span th:if="${outOfStockCount > 0}"> · <strong style="color:#dc2626;" th:text="${outOfStockCount + ' out of stock'}"></strong></span>
+                    <span th:if="${lowStockCount > 0}"> · <strong style="color:#d97706;" th:text="${lowStockCount + ' low stock'}"></strong></span>
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <form th:action="@{/inventory}" method="get" style="display:flex;gap:8px;">
+                        <input type="text" name="q" th:value="${query}" placeholder="Search products or HSN..." class="form-input" style="width:240px;"/>
+                        <button type="submit" class="btn btn-navy">Search</button>
+                        <a th:if="${query != null and !#strings.isEmpty(query)}" th:href="@{/inventory}" class="btn btn-ghost">Clear</a>
+                    </form>
+                    <a th:href="@{/inventory/new}" class="btn btn-gold">+ Add Product</a>
+                </div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(products)}" class="card" style="text-align:center;padding:64px;">
+                <h3 style="color:#9ca3af;margin-bottom:12px;">No Products Found</h3>
+                <a th:href="@{/inventory/new}" class="btn btn-gold" style="display:inline-flex;">Add First Product</a>
+            </div>
+
+            <div th:if="${!#lists.isEmpty(products)}" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;">
+                <div th:each="p : ${products}" x-data="{showStock:false}" class="card" style="transition:box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,0.07)'">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:15px;font-weight:700;color:#0f3460;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" th:text="${p.name}"></div>
+                            <div style="font-size:11px;color:#9ca3af;font-family:monospace;margin-top:2px;">HSN: <span th:text="${p.hsnCode}"></span></div>
+                        </div>
+                        <span th:if="${p.stockQuantity==0}" class="badge badge-red" style="flex-shrink:0;margin-left:8px;">OUT</span>
+                        <span th:if="${p.stockQuantity>0 and p.stockQuantity<=5}" class="badge badge-yellow" style="flex-shrink:0;margin-left:8px;">LOW</span>
+                        <span th:if="${p.stockQuantity>5}" class="badge badge-green" style="flex-shrink:0;margin-left:8px;">IN STOCK</span>
+                    </div>
+                    <div th:if="${p.description != null and !#strings.isEmpty(p.description)}" style="font-size:12px;color:#6b7280;margin-bottom:12px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;" th:text="${p.description}"></div>
+                    <div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid #f3f4f6;border-bottom:1px solid #f3f4f6;margin-bottom:12px;">
+                        <div>
+                            <div style="font-size:11px;color:#9ca3af;font-weight:600;">Price</div>
+                            <div style="font-size:20px;font-weight:800;color:#0f3460;">₹<span th:text="${#numbers.formatDecimal(p.currentPrice,1,'COMMA',2,'POINT')}"></span></div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:11px;color:#9ca3af;font-weight:600;">Stock</div>
+                            <div th:style="${p.stockQuantity==0?'color:#dc2626;':p.stockQuantity<=5?'color:#d97706;':'color:#16a34a;'}" style="font-size:20px;font-weight:800;">
+                                <span th:text="${p.stockQuantity}"></span> <span style="font-size:12px;font-weight:400;color:#9ca3af;">units</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Normal Actions -->
+                    <div x-show="!showStock" style="display:flex;gap:8px;">
+                        <button @click="showStock=true" class="btn btn-green" style="flex:1;font-size:12px;padding:7px;justify-content:center;">+ Add Stock</button>
+                        <a th:href="@{/inventory/edit/{id}(id=${p.id})}" class="btn btn-navy" style="flex:1;font-size:12px;padding:7px;justify-content:center;">✎ Edit</a>
+                        <form th:action="@{/inventory/deactivate/{id}(id=${p.id})}" method="post" onsubmit="return confirm('Remove this product?')" style="display:flex;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-red" style="font-size:12px;padding:7px 10px;">🗑</button>
+                        </form>
+                    </div>
+                    <!-- Add Stock Form -->
+                    <form x-show="showStock" x-cloak th:action="@{/inventory/add-stock/{id}(id=${p.id})}" method="post" style="display:flex;gap:8px;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="number" name="quantity" min="1" value="1" class="form-input" style="flex:1;text-align:center;font-weight:700;"/>
+                        <button type="submit" class="btn btn-green" style="padding:8px 14px;">✓ Add</button>
+                        <button type="button" @click="showStock=false" class="btn btn-ghost" style="padding:8px 12px;">✕</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+        <div class="page-footer">&copy; 2024 MMD Furniture House Management System</div>
+    </div>
+</div>
+<th:block th:insert="~{fragments/layout :: clockScript}"></th:block>
+</body>
+</html>

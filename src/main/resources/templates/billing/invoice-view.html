@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${invoice.documentTitle + ' | MMD Furniture House'}">Invoice</title>
+    <th:block th:insert="~{fragments/layout :: headStyles}"></th:block>
+</head>
+<body>
+<div class="app-layout">
+    <div th:insert="~{fragments/layout :: sidebar}"></div>
+    <div class="main-col">
+        <div th:insert="~{fragments/layout :: topbar(${invoice.documentTitle + ' #' + invoice.invoiceNumber})}"></div>
+        <div th:insert="~{fragments/layout :: alerts}"></div>
+        <div class="page-content">
+
+            <!-- Action Bar -->
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span th:class="${invoice.isQuotation()?'badge badge-yellow':invoice.isFinalBill()?'badge badge-green':'badge badge-red'}" style="font-size:13px;padding:5px 14px;" th:text="${invoice.status.displayName}"></span>
+                    <span style="color:#9ca3af;font-size:13px;" th:text="${'Created: ' + #temporals.format(invoice.createdAt,'dd MMM yyyy, HH:mm')}"></span>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <form th:if="${invoice.isQuotation()}" th:action="@{/billing/convert/{id}(id=${invoice.id})}" method="post" onsubmit="return confirm('Convert to Final Bill? Stock will be deducted.')">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-green">✓ Convert to Final Bill</button>
+                    </form>
+                    <form th:if="${invoice.isQuotation()}" th:action="@{/billing/cancel/{id}(id=${invoice.id})}" method="post" onsubmit="return confirm('Cancel this quotation?')">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="btn btn-red">✕ Cancel</button>
+                    </form>
+                    <a th:href="@{/billing/pdf/{id}(id=${invoice.id})}" class="btn" style="background:#dc2626;color:white;">⬇ Download PDF</a>
+                    <a th:href="@{/billing/new}" class="btn btn-gold">+ New Bill</a>
+                </div>
+            </div>
+
+            <!-- Invoice Card -->
+            <div class="card">
+                <!-- Shop Header -->
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:20px;border-bottom:1px solid #f0f0f0;margin-bottom:20px;">
+                    <div>
+                        <div style="font-size:22px;font-weight:800;color:#0f3460;">MMD Furniture House</div>
+                        <div style="color:#6b7280;font-size:13px;margin-top:4px;">Quality Furniture for Every Home</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div th:style="${invoice.isQuotation()?'color:#d97706;':'color:#16a34a;'}" style="font-size:26px;font-weight:900;text-transform:uppercase;" th:text="${invoice.documentTitle}"></div>
+                        <div style="color:#9ca3af;font-size:12px;font-family:monospace;">#<span th:text="${invoice.invoiceNumber}"></span></div>
+                    </div>
+                </div>
+
+                <!-- Customer + Meta -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;padding-bottom:20px;border-bottom:1px solid #f0f0f0;margin-bottom:20px;">
+                    <div>
+                        <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Bill To</div>
+                        <div style="font-size:18px;font-weight:700;color:#0f3460;" th:text="${invoice.customer.name}"></div>
+                        <div style="color:#6b7280;font-size:13px;margin-top:4px;" th:text="${invoice.customer.phone}"></div>
+                        <div style="color:#9ca3af;font-size:13px;" th:text="${invoice.customer.address}"></div>
+                        <div th:if="${invoice.customer.hasGst()}" style="color:#b8860b;font-size:13px;font-weight:600;margin-top:4px;">GSTIN: <span th:text="${invoice.customer.gstNumber}"></span></div>
+                    </div>
+                    <div style="text-align:right;">
+                        <table style="width:auto;margin-left:auto;font-size:13px;">
+                            <tr><td style="color:#9ca3af;padding:3px 12px 3px 0;text-align:left;">Invoice No.</td><td style="font-weight:700;font-family:monospace;" th:text="${invoice.invoiceNumber}"></td></tr>
+                            <tr><td style="color:#9ca3af;padding:3px 12px 3px 0;text-align:left;">Date</td><td style="font-weight:600;" th:text="${#temporals.format(invoice.createdAt,'dd MMM yyyy')}"></td></tr>
+                            <tr th:if="${invoice.convertedAt != null}"><td style="color:#9ca3af;padding:3px 12px 3px 0;text-align:left;">Billed On</td><td style="color:#16a34a;font-weight:600;" th:text="${#temporals.format(invoice.convertedAt,'dd MMM yyyy')}"></td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <table style="margin-bottom:0;">
+                    <thead><tr>
+                        <th>#</th><th>Product</th><th style="text-align:center;">HSN</th><th style="text-align:center;">Qty</th>
+                        <th style="text-align:right;">Rate (₹)</th><th style="text-align:right;">CGST 9%</th><th style="text-align:right;">SGST 9%</th><th style="text-align:right;">Total (₹)</th>
+                    </tr></thead>
+                    <tbody>
+                    <tr th:each="item,iter : ${invoice.items}">
+                        <td style="color:#9ca3af;" th:text="${iter.count}"></td>
+                        <td>
+                            <div style="font-weight:600;color:#0f3460;" th:text="${item.productName?:item.product.name}"></div>
+                            <div style="font-size:11px;color:#9ca3af;" th:text="${item.product.description}"></div>
+                        </td>
+                        <td style="text-align:center;font-family:monospace;font-size:12px;" th:text="${item.hsnCode}"></td>
+                        <td style="text-align:center;font-weight:700;" th:text="${item.quantity}"></td>
+                        <td style="text-align:right;font-family:monospace;" th:text="${#numbers.formatDecimal(item.soldAtPrice,1,'COMMA',2,'POINT')}"></td>
+                        <td style="text-align:right;font-family:monospace;font-size:13px;" th:text="${#numbers.formatDecimal(item.cgstAmount,1,'COMMA',2,'POINT')}"></td>
+                        <td style="text-align:right;font-family:monospace;font-size:13px;" th:text="${#numbers.formatDecimal(item.sgstAmount,1,'COMMA',2,'POINT')}"></td>
+                        <td style="text-align:right;font-weight:700;color:#0f3460;font-family:monospace;" th:text="${#numbers.formatDecimal(item.total,1,'COMMA',2,'POINT')}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <!-- Totals -->
+                <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+                    <table style="width:300px;font-size:14px;">
+                        <tr><td style="color:#6b7280;padding:4px 0;">Subtotal</td><td style="text-align:right;font-weight:600;">₹<span th:text="${#numbers.formatDecimal(invoice.subtotal,1,'COMMA',2,'POINT')}"></span></td></tr>
+                        <tr><td style="color:#6b7280;padding:4px 0;">CGST @ 9%</td><td style="text-align:right;">₹<span th:text="${#numbers.formatDecimal(invoice.cgstAmount,1,'COMMA',2,'POINT')}"></span></td></tr>
+                        <tr><td style="color:#6b7280;padding:4px 0;">SGST @ 9%</td><td style="text-align:right;">₹<span th:text="${#numbers.formatDecimal(invoice.sgstAmount,1,'COMMA',2,'POINT')}"></span></td></tr>
+                        <tr><td colspan="2"><div style="border-top:2px solid #1a1a2e;margin:8px 0;"></div></td></tr>
+                        <tr style="background:#1a1a2e;border-radius:10px;">
+                            <td style="color:#d4a017;font-weight:700;font-size:15px;padding:10px 12px;border-radius:10px 0 0 10px;">Grand Total</td>
+                            <td style="text-align:right;color:#d4a017;font-weight:800;font-size:18px;font-family:monospace;padding:10px 12px;border-radius:0 10px 10px 0;">₹<span th:text="${#numbers.formatDecimal(invoice.grandTotal,1,'COMMA',2,'POINT')}"></span></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div th:if="${invoice.notes != null and !#strings.isEmpty(invoice.notes)}" style="margin-top:20px;background:#fffbe6;border:1px solid #fde68a;border-radius:10px;padding:14px;">
+                    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Notes</div>
+                    <div style="color:#374151;font-size:14px;" th:text="${invoice.notes}"></div>
+                </div>
+
+                <div style="margin-top:20px;padding-top:16px;border-top:1px dashed #e5e7eb;text-align:center;color:#9ca3af;font-size:12px;">
+                    <span th:if="${invoice.isQuotation()}">This is a quotation only. Stock is not reserved. Prices valid for 30 days.</span>
+                    <span th:if="${invoice.isFinalBill()}">This is a computer generated invoice. Thank you for your business!</span>
+                </div>
+            </div>
+
+        </div>
+        <div class="page-footer">&copy; 2024 MMD Furniture House Management System</div>
+    </div>
+</div>
+<th:block th:insert="~{fragments/layout :: clockScript}"></th:block>
+</body>
+</html>
