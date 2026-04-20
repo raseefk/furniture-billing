@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  furniture-shop:
+    image: furniture-shop-management
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      ORACLE_HOST: host.docker.internal
+      ORACLE_PORT: 1521
+      ORACLE_SERVICE: FREEPDB1
+      ORACLE_USERNAME: furniture
+      ORACLE_PASSWORD: admin123

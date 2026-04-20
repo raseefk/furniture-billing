@@ -39,7 +39,8 @@ public class Product {
     @Column(nullable = false)
     private String hsnCode;
 
-    @Column(columnDefinition = "TEXT")
+    @Lob
+    @Column(columnDefinition = "CLOB")
     private String description;
 
     @Builder.Default

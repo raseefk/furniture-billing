@@ -30,7 +30,8 @@ public class Customer {
     private String phone;
 
     @NotBlank(message = "Address is required")
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Lob
+    @Column(nullable = false, columnDefinition = "CLOB")
     private String address;
 
     // GST Number is optional (for B2B customers)
