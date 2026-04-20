@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: furniture-shop-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: furniture-shop
+  template:
+    metadata:
+      labels:
+        app: furniture-shop
+    spec:
+      containers:
+      - name: furniture-shop
+        image: furniture-shop-management
+        ports:
+        - containerPort: 8080
