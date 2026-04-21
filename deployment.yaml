@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: furniture-shop-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: furniture-shop
+  template:
+    metadata:
+      labels:
+        app: furniture-shop
+    spec:
+      containers:
+      - name: furniture-shop
+        image: docker.io/raseefk/furniture-shop-management:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ORACLE_HOST
+          value: "your-oracle-host"  # Replace with your Oracle DB host
+        - name: ORACLE_PORT
+          value: "1521"
+        - name: ORACLE_SERVICE
+          value: "FREEPDB1"
+        - name: ORACLE_USERNAME
+          value: "furniture"
+        - name: ORACLE_PASSWORD
+          value: "admin123"  # Use a Secret for passwords in production

@@ -1,12 +1,12 @@
 version: "3.9"
 services:
   furniture-shop:
-    image: furniture-shop-management
+    image: docker.io/raseefk/furniture-shop-management-oracle:latest
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8083:8083"
     environment:
       ORACLE_HOST: host.docker.internal
       ORACLE_PORT: 1521
