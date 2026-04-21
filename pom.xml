@@ -12,7 +12,7 @@
     </parent>
 
     <groupId>com.furnitureshop</groupId>
-    <artifactId>furniture-shop-management</artifactId>
+    <artifactId>furniture-shop-management-mmd</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
     <name>Furniture Shop Management System</name>

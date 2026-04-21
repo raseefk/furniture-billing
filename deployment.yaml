@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: furniture-shop
-        image: furniture-shop-management
+        image: docker.io/raseefk/furniture-shop-management-mmd:latest
         ports:
         - containerPort: 8080

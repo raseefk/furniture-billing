@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  furniture-shop-app:
+    build: .
+    image: docker.io/raseefk/furniture-shop-management-mmd:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    restart: unless-stopped
